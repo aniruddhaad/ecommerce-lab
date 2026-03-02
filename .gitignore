@@ -1,0 +1,17 @@
+# Symfony / PHP
+**/vendor/
+**/var/
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Node
+**/node_modules/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
