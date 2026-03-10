@@ -1,0 +1,73 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    networks:
+      - ecommerce-net
+
+  saga-db:
+    image: postgres:16
+    container_name: saga-db
+    environment:
+      POSTGRES_DB: saga_db
+      POSTGRES_USER: saga_user
+      POSTGRES_PASSWORD: saga_pass
+    ports:
+      - "5433:5432"
+    networks:
+      - ecommerce-net
+
+  saga-service:
+    build:
+      context: ./saga-service
+    container_name: saga-service
+    depends_on:
+      - saga-db
+      - rabbitmq
+    environment:
+      DATABASE_URL: "postgresql://saga_user:saga_pass@saga-db:5432/saga_db?serverVersion=16"
+      MESSENGER_TRANSPORT_DSN: "amqp://admin:admin@rabbitmq:5672/%2f/messages"
+    networks:
+      - ecommerce-net
+    volumes:
+      - ./:/var/www
+    working_dir: /var/www/saga-service
+
+  inventory-db:
+    image: postgres:16
+    container_name: inventory-db
+    environment:
+      POSTGRES_DB: inventory_db
+      POSTGRES_USER: inventory_user
+      POSTGRES_PASSWORD: inventory_pass
+    ports:
+      - "5434:5432"
+    networks:
+      - ecommerce-net
+
+  inventory-service:
+    build:
+      context: ./inventory-service
+    container_name: inventory-service
+    depends_on:
+      - rabbitmq
+      - inventory-db
+    environment:
+      DATABASE_URL: "postgresql://inventory_user:inventory_pass@inventory-db:5432/inventory_db?serverVersion=16"
+      MESSENGER_TRANSPORT_DSN: "amqp://admin:admin@rabbitmq:5672/%2f/messages"
+    networks:
+      - ecommerce-net
+    volumes:
+      - ./:/var/www
+    working_dir: /var/www/inventory-service
+
+networks:
+  ecommerce-net:
+    driver: bridge
