@@ -68,6 +68,34 @@ services:
       - ./:/var/www
     working_dir: /var/www/inventory-service
 
+  payment-db:
+    image: postgres:16
+    container_name: payment-db
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - ecommerce-net
+  
+  payment-service:
+    build:
+      context: ./payment-service
+    container_name: payment-service
+    volumes:
+      - ./:/var/www
+    working_dir: /var/www/payment-service
+    depends_on:
+      - rabbitmq
+      - payment-db
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@payment-db:5432/payment_db?serverVersion=16"
+      MESSENGER_TRANSPORT_DSN: "amqp://admin:admin@rabbitmq:5672/%2f"
+    networks:
+      - ecommerce-net
+
 networks:
   ecommerce-net:
     driver: bridge
