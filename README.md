@@ -1,433 +1,290 @@
-# E-Commerce Microservices Saga Architecture (Learning Project)
 
-## Overview
+# E-commerce Microservices Architecture Lab
 
-This repository demonstrates a **microservices-based e‑commerce
-workflow** built with:
+Architecture lab exploring **event-driven microservices architecture** for an e-commerce platform using **Symfony Messenger, RabbitMQ, Docker, and PostgreSQL**.
 
--   PHP 8.3
--   Symfony 7
--   Symfony Messenger
--   RabbitMQ
--   PostgreSQL
--   Docker
--   Saga Orchestration Pattern
+The goal of this project is to experiment with **distributed systems patterns**, especially **Saga orchestration**, for coordinating multiple services in a microservices-based e-commerce system.
 
-The goal of this project is to **learn and demonstrate distributed
-system design**, event‑driven communication, and workflow orchestration
-using the Saga pattern.
+---
 
-The architecture simulates a **checkout workflow** where multiple
-services coordinate asynchronously.
+# Project Goals
 
-------------------------------------------------------------------------
+- Understand **event-driven architecture**
+- Implement **Saga orchestration pattern**
+- Explore **asynchronous messaging with RabbitMQ**
+- Learn **microservices communication using Symfony Messenger**
+- Build a realistic **e-commerce order workflow across services**
 
-# Architecture Summary
+---
 
-Services in the system:
+# Technologies
 
--   **Saga Service** -- Central workflow orchestrator
--   **Inventory Service** -- Handles inventory reservation
--   **Payment Service** -- Handles payment processing
--   **RabbitMQ** -- Message broker
--   **PostgreSQL** -- Service-specific databases
+- PHP 8
+- Symfony 7
+- Symfony Messenger
+- RabbitMQ
+- Docker
+- PostgreSQL
 
-Each service:
+---
 
--   runs independently
--   has its own database
--   communicates through RabbitMQ events and commands
+# C4 Architecture Overview
 
-------------------------------------------------------------------------
+The C4 model describes software architecture at multiple levels.
+
+Levels included here:
+
+1. **System Context**
+2. **Container Diagram**
+3. **Component Diagram**
+
+---
+
+# 1. System Context Diagram
+
+Shows how the platform interacts with external actors and systems.
+
+```mermaid
+flowchart LR
+    Customer --> EcommercePlatform
+    Admin --> EcommercePlatform
+    EcommercePlatform --> RabbitMQ
+    EcommercePlatform --> PostgreSQL
+```
+
+---
+
+# 2. Container Diagram
+
+Shows major containers/services within the platform.
+
+```mermaid
+flowchart TD
+    Client --> OrderService
+    OrderService --> RabbitMQ
+    RabbitMQ --> SagaService
+    SagaService --> InventoryService
+    InventoryService --> RabbitMQ
+    RabbitMQ --> SagaService
+    SagaService --> OrderService
+    OrderService --> PostgreSQL
+```
+
+---
+
+# 3. Component Diagram
+
+Breakdown of components inside the Saga service.
+
+```mermaid
+flowchart TD
+    OrderCreatedEvent --> SagaHandler
+    SagaHandler --> InventoryReserveCommand
+    InventoryReserveCommand --> InventoryService
+    InventoryService --> InventoryReservedEvent
+    InventoryReservedEvent --> SagaHandler
+    SagaHandler --> OrderConfirmedCommand
+```
+
+---
 
 # Requirement Gathering
 
-## Business Problem
+The system models a simplified e-commerce platform capable of:
 
-In a distributed e‑commerce system, completing an order requires
-multiple services:
+- Creating orders
+- Reserving inventory
+- Processing distributed workflows across services
+- Coordinating services through messaging
 
-1.  Reserve inventory
-2.  Process payment
-3.  Ship order
+Key requirement:
 
-These services must coordinate **without using distributed database
-transactions**.
+Distributed services must complete workflows **without distributed database transactions**, using **Saga orchestration**.
 
-Traditional ACID transactions do not work across microservices.
+---
 
-Therefore we implement the **Saga Pattern** to maintain consistency.
+# Feature Requirements
 
-------------------------------------------------------------------------
+## Functional Requirements
 
-# Functional Requirements
+1. Create Order
+2. Trigger OrderCreated event
+3. Reserve inventory
+4. Confirm order
+5. Handle failures using Saga compensation
 
-1.  A customer places an order.
-2.  The system reserves inventory.
-3.  The system processes payment.
-4.  The order completes when all steps succeed.
-5.  The system must handle failures and retries.
-6.  Each service operates independently.
-7.  Communication occurs via asynchronous messaging.
+## Non-Functional Requirements
 
-------------------------------------------------------------------------
+- Asynchronous messaging
+- Service decoupling
+- Fault tolerance
+- Event-driven architecture
+- Horizontal scalability
+
+---
 
 # Quality Attributes
 
-## Reliability
+### Scalability
+Services communicate via messaging allowing independent scaling.
 
-Messages must not be lost even if services crash.
+### Fault Tolerance
+Failures are isolated and handled through Saga compensation.
 
-RabbitMQ ensures: - message persistence - retries - delivery guarantees
+### Loose Coupling
+Services communicate only through events.
 
-## Scalability
+### Maintainability
+Each service has a clear responsibility.
 
-Each service can scale independently.
-
-Example:
-
-Inventory service may run multiple workers.
-
-## Loose Coupling
-
-Services communicate only through:
-
--   **Commands**
--   **Events**
-
-Services never call each other directly.
-
-## Fault Tolerance
-
-If a worker crashes:
-
--   RabbitMQ requeues messages
--   Workers can resume processing
-
-## Observability
-
-Logs allow tracing of Saga execution.
-
-Example log:
-
-\[SAGA order_id\] Inventory reserved
-
-------------------------------------------------------------------------
+---
 
 # Actors / Users
 
-## Customer
+| Actor | Description |
+|------|-------------|
+| Customer | Places orders |
+| Admin | Manages system |
+| Order Service | Creates orders |
+| Inventory Service | Manages stock |
+| Saga Orchestrator | Coordinates workflow |
+| RabbitMQ | Messaging infrastructure |
 
-Initiates the checkout process.
-
-## System Services
-
-  Actor               Responsibility
-  ------------------- ------------------------
-  Saga Service        Orchestrates workflow
-  Inventory Service   Reserves product stock
-  Payment Service     Processes payments
-  RabbitMQ            Message broker
-  PostgreSQL          Data persistence
-
-------------------------------------------------------------------------
+---
 
 # System Constraints
 
-1.  Microservices must be **independent**
-2.  Each service owns its **own database**
-3.  No distributed transactions
-4.  Communication must be **asynchronous**
-5.  Services must be **idempotent**
-6.  Messages may be **delivered multiple times**
-7.  Workflow consistency maintained using **Saga orchestration**
+- Communication via messaging only
+- RabbitMQ used as event transport
+- Distributed transactions handled via Saga pattern
+- Services must remain loosely coupled
+- Development environment runs with Docker
 
-------------------------------------------------------------------------
+---
 
-# Saga Pattern
+# Saga Sequence Diagram
 
-The Saga pattern coordinates distributed transactions using:
-
--   **Commands**
--   **Events**
--   **State transitions**
-
-Our project implements **Orchestrated Saga**.
-
-The **Saga Service controls the workflow**.
-
-------------------------------------------------------------------------
-
-# High-Level Architecture
-
-``` mermaid
-flowchart LR
-
-Customer --> Saga
-
-Saga --> RabbitMQ
-RabbitMQ --> InventoryService
-RabbitMQ --> PaymentService
-
-InventoryService --> RabbitMQ
-PaymentService --> RabbitMQ
-
-RabbitMQ --> Saga
-```
-
-------------------------------------------------------------------------
-
-# Services
-
-## Saga Service
-
-Responsibilities:
-
--   Maintains Saga state
--   Handles workflow events
--   Dispatches commands
-
-State Machine:
-
-    STARTED
-    RESERVING_INVENTORY
-    PROCESSING_PAYMENT
-    COMPLETED
-    FAILED
-
-------------------------------------------------------------------------
-
-## Inventory Service
-
-Handles:
-
--   ReserveInventory command
--   Emits InventoryReserved event
-
-------------------------------------------------------------------------
-
-## Payment Service
-
-Handles:
-
--   ProcessPayment command
--   Emits PaymentProcessed event
-
-------------------------------------------------------------------------
-
-# Event-Driven Communication
-
-Services communicate using **RabbitMQ exchanges and queues**.
-
-Example message routing:
-
-    Saga → ReserveInventory → Inventory Service
-    Inventory → InventoryReserved → Saga
-    Saga → ProcessPayment → Payment Service
-    Payment → PaymentProcessed → Saga
-
-------------------------------------------------------------------------
-
-# Sequence Diagram
-
-``` mermaid
+```mermaid
 sequenceDiagram
+    participant Customer
+    participant OrderService
+    participant SagaService
+    participant InventoryService
+    participant RabbitMQ
 
-participant Customer
-participant Saga
-participant RabbitMQ
-participant Inventory
-participant Payment
-
-Customer->>Saga: OrderCreated
-
-Saga->>RabbitMQ: ReserveInventory
-RabbitMQ->>Inventory: ReserveInventory
-
-Inventory->>RabbitMQ: InventoryReserved
-RabbitMQ->>Saga: InventoryReserved
-
-Saga->>RabbitMQ: ProcessPayment
-RabbitMQ->>Payment: ProcessPayment
-
-Payment->>RabbitMQ: PaymentProcessed
-RabbitMQ->>Saga: PaymentProcessed
-
-Saga->>Saga: Complete Order
+    Customer->>OrderService: Create Order
+    OrderService->>RabbitMQ: Publish OrderCreated
+    RabbitMQ->>SagaService: OrderCreated
+    SagaService->>RabbitMQ: InventoryReserveRequested
+    RabbitMQ->>InventoryService: Reserve Inventory
+    InventoryService->>RabbitMQ: InventoryReserved
+    RabbitMQ->>SagaService: InventoryReserved
+    SagaService->>OrderService: Confirm Order
 ```
 
-------------------------------------------------------------------------
+---
 
-# User Flow
+# User Flow Diagram
 
-``` mermaid
-flowchart TD
-
-Start --> OrderCreated
-OrderCreated --> ReserveInventory
-ReserveInventory --> InventoryReserved
-InventoryReserved --> ProcessPayment
-ProcessPayment --> PaymentProcessed
-PaymentProcessed --> OrderCompleted
-```
-
-------------------------------------------------------------------------
-
-# Saga State Transitions
-
-``` mermaid
-stateDiagram-v2
-
-[*] --> STARTED
-STARTED --> RESERVING_INVENTORY
-RESERVING_INVENTORY --> PROCESSING_PAYMENT
-PROCESSING_PAYMENT --> COMPLETED
-PROCESSING_PAYMENT --> FAILED
-```
-
-------------------------------------------------------------------------
-
-# Message Flow Diagram
-
-``` mermaid
+```mermaid
 flowchart LR
-
-Saga -->|Command| RabbitMQ
-RabbitMQ --> Inventory
-Inventory -->|Event| RabbitMQ
-RabbitMQ --> Saga
-Saga -->|Command| RabbitMQ
-RabbitMQ --> Payment
-Payment -->|Event| RabbitMQ
-RabbitMQ --> Saga
+    A[Customer places order] --> B[Order Service]
+    B --> C[OrderCreated Event]
+    C --> D[Saga Orchestrator]
+    D --> E[Inventory Service]
+    E --> F[Inventory Reserved]
+    F --> G[Order Confirmed]
 ```
 
-------------------------------------------------------------------------
+---
 
-# What Has Been Implemented
+# Event Flow
 
-Completed components:
+OrderCreated  
+↓  
+InventoryReserveRequested  
+↓  
+InventoryReserved  
+↓  
+OrderConfirmed  
 
--   Docker-based microservices environment
--   RabbitMQ messaging integration
--   Symfony Messenger workers
--   Saga orchestrator service
--   Inventory service
--   Payment service
--   Event-driven communication
--   Saga state machine
--   Idempotent message handling
+Failure path:
 
-------------------------------------------------------------------------
+OrderCreated  
+↓  
+InventoryReserveRequested  
+↓  
+InventoryFailed  
+↓  
+Saga Compensation  
 
-# Current Workflow
+---
 
-    OrderCreated
-    ↓
-    ReserveInventory
-    ↓
-    InventoryReserved
-    ↓
-    ProcessPayment
-    ↓
-    PaymentProcessed
-    ↓
-    Saga Completed
+# Current Implementation Status
 
-------------------------------------------------------------------------
+✔ Docker environment  
+✔ Symfony services setup  
+✔ RabbitMQ messaging  
+✔ Messenger transports  
+✔ Saga orchestration basic flow  
 
-# Future Roadmap
+---
 
-Next improvements planned:
+# Roadmap
 
-## 1. Shipment Service
+## Phase 1 – Foundation
+- Setup Docker
+- Configure Messenger
+- Integrate RabbitMQ
 
-Add final fulfillment step.
+## Phase 2 – Services
+- Implement Order Service
+- Implement Inventory Service
 
-    PaymentProcessed
-    ↓
-    CreateShipment
-    ↓
-    ShipmentCreated
+## Phase 3 – Saga
+- Saga orchestrator
+- Compensation logic
 
-## 2. Compensation Flow
+## Phase 4 – Observability
+- Logging
+- Queue monitoring
 
-Handle failures.
+## Phase 5 – Advanced
+- Payment service
+- Retry policies
+- Dead-letter queues
+- Idempotency
 
-Example:
+---
 
-    PaymentFailed
-    ↓
-    ReleaseInventory
-    ↓
-    Saga Failed
+# Running the Project
 
-## 3. Timeout Handling
+Start containers:
 
-Handle stuck workflows.
-
-Example:
-
-    Payment not completed in 5 minutes
-    ↓
-    Trigger compensation
-
-## 4. Observability
-
-Add:
-
--   structured logging
--   tracing
--   metrics
-
-Tools:
-
--   Prometheus
--   Grafana
--   OpenTelemetry
-
-## 5. CI/CD
-
-Automate:
-
--   builds
--   tests
--   container deployments
-
-------------------------------------------------------------------------
-
-# Development Environment
-
-Run services:
-
-``` bash
-docker compose up -d
+```bash
+docker compose up --build
 ```
 
-Start workers:
+Run messenger worker:
 
-    php bin/console messenger:consume saga
-    php bin/console messenger:consume inventory
-    php bin/console messenger:consume payment
+```bash
+php bin/console messenger:consume async
+```
 
-RabbitMQ UI:
+---
 
-http://localhost:15672
+# Learning Objectives
 
-------------------------------------------------------------------------
+This repository demonstrates:
 
-# Learning Goals
+- Event-driven microservices
+- Saga orchestration
+- Messaging-based system integration
+- Distributed workflow coordination
 
-This project demonstrates:
+---
 
--   Event-driven architecture
--   Microservices communication
--   Saga orchestration
--   Message broker reliability
--   Distributed workflow management
+# Author
 
-------------------------------------------------------------------------
-
-# License
-
-MIT License
+**Aniruddha Deshpande**  
+Technical Architect | API Platforms | Marketplace Integrations | Symfony / PHP
