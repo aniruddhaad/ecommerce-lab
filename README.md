@@ -32,7 +32,42 @@ The goal of this project is to experiment with **distributed systems patterns**,
 
 ---
 
-# C4 Architecture Overview
+# Architecture Decisions
+
+## ADR-001 – Event Driven Communication
+
+**Decision:**
+Services communicate asynchronously using RabbitMQ events.
+
+**Reason:**
+Loose coupling between services and better scalability.
+
+**Alternative considered:**
+Direct HTTP calls between services.
+
+## ADR-002 – Saga Orchestration
+
+**Decision:**
+Distributed transactions are coordinated using the Saga pattern.
+
+**Reason:**
+Traditional database transactions cannot span multiple services.
+
+**Alternative considered:**
+Two-phase commit (2PC), which is complex and tightly coupled.
+
+## ADR-003 – Symfony Messenger
+
+**Decision:**
+Symfony Messenger is used as the messaging abstraction.
+
+**Reason:**
+Provides clean integration with RabbitMQ and simplifies message handling.
+
+**Alternative considered:**
+Custom message bus implementation.
+
+## C4 Architecture Overview
 
 The C4 model describes software architecture at multiple levels.
 
