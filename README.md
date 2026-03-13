@@ -7,7 +7,22 @@
 ![Language](https://img.shields.io/badge/Language-PHP-blue)
 
 
-⚠️ This repository is an architecture lab created to explore event-driven microservices patterns and saga orchestration. It is not intended to be a production-ready e-commerce system.
+⚠️ Architecture lab exploring event-driven microservices and saga orchestration.
+
+---
+
+## Architecture Highlights
+
+This project demonstrates an **event-driven microservices architecture**
+for an e-commerce system using **Symfony Messenger and RabbitMQ**.
+
+Key concepts explored:
+
+• Saga orchestration for distributed transactions  
+• Event-driven service communication  
+• RabbitMQ messaging topology  
+• Symfony Messenger message bus  
+• Microservices workflow coordination
 
 ---
 
