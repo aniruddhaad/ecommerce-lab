@@ -67,6 +67,8 @@ Provides clean integration with RabbitMQ and simplifies message handling.
 **Alternative considered:**
 Custom message bus implementation.
 
+---
+
 ## C4 Architecture Overview
 
 The C4 model describes software architecture at multiple levels.
