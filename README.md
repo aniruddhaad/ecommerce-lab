@@ -1,5 +1,14 @@
 # E-commerce Microservices Architecture Lab
 
+![Architecture](https://img.shields.io/badge/Architecture-Microservices-blue)
+![Messaging](https://img.shields.io/badge/Messaging-RabbitMQ-orange)
+![Pattern](https://img.shields.io/badge/Pattern-Saga-green)
+![Framework](https://img.shields.io/badge/Framework-Symfony-purple)
+![Language](https://img.shields.io/badge/Language-PHP-blue)
+
+
+⚠️ This repository is an architecture lab created to explore event-driven microservices patterns and saga orchestration.
+
 ---
 
 # Table of Contents
@@ -24,10 +33,6 @@
 - [Roadmap](#roadmap)
 - [Running the Project](#running-the-project)
 - [Learning Objectives](#learning-objectives)
-
-
-⚠️ This repository is an architecture lab created to explore
-event-driven microservices patterns and saga orchestration.
 
 It is not intended to be a production-ready e-commerce system.
 
