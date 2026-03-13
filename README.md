@@ -400,6 +400,57 @@ This repository demonstrates:
 
 ---
 
+
+---
+
+# Running the Workers
+
+Start the Symfony Messenger workers for each service. Run these commands in separate terminals.
+
+Saga service worker:
+
+```bash
+docker exec -it saga-service php bin/console messenger:consume saga -vv
+```
+
+Inventory service worker:
+
+```bash
+docker exec -it inventory-service php bin/console messenger:consume inventory -vv
+```
+
+Payment service worker:
+
+```bash
+docker exec -it payment-service php bin/console messenger:consume payment -vv
+```
+
+These workers listen to RabbitMQ queues and process events asynchronously.
+
+---
+
+# Trigger the Saga Workflow
+
+Once the workers are running, trigger the workflow by creating a test order.
+
+```bash
+docker exec -it saga-service php bin/console app:test-saga
+```
+
+Expected event flow:
+
+OrderCreated  
+↓  
+InventoryReserveRequested  
+↓  
+InventoryReserved  
+↓  
+PaymentProcessed  
+↓  
+OrderConfirmed  
+
+You can observe the event flow directly in the worker logs.
+
 # Author
 
 **Aniruddha Deshpande**  
