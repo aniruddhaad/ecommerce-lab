@@ -11,6 +11,16 @@
 
 ---
 
+## Architecture Overview
+
+![Architecture Diagram](docs/images/architecture-thumbnail.png)
+
+Architecture lab exploring **event-driven microservices architecture** for an e-commerce platform using **Symfony Messenger, RabbitMQ, Docker, and PostgreSQL**.
+
+The goal of this project is to experiment with **distributed systems patterns**, especially **Saga orchestration**, for coordinating multiple services in a microservices-based e-commerce system.
+
+---
+
 # Table of Contents
 
 - [Project Goals](#project-goals)
@@ -33,10 +43,6 @@
 - [Roadmap](#roadmap)
 - [Running the Project](#running-the-project)
 - [Learning Objectives](#learning-objectives)
-
-Architecture lab exploring **event-driven microservices architecture** for an e-commerce platform using **Symfony Messenger, RabbitMQ, Docker, and PostgreSQL**.
-
-The goal of this project is to experiment with **distributed systems patterns**, especially **Saga orchestration**, for coordinating multiple services in a microservices-based e-commerce system.
 
 ---
 
