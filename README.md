@@ -26,6 +26,22 @@ Key concepts explored:
 
 ---
 
+## Concepts Demonstrated
+
+This repository provides a practical example of several
+distributed system and microservices architecture patterns.
+
+Concepts covered:
+
+• Saga pattern example for distributed transactions  
+• Saga orchestration in microservices  
+• Event-driven architecture using RabbitMQ  
+• Symfony Messenger message bus for asynchronous communication  
+• Microservices workflow coordination  
+• RabbitMQ messaging topology example
+
+---
+
 ## Architecture Overview
 
 ![Architecture Diagram](docs/images/architecture-thumbnail.png)
