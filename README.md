@@ -1,5 +1,31 @@
 # E-commerce Microservices Architecture Lab
 
+---
+
+# Table of Contents
+
+- [Project Goals](#project-goals)
+- [Technologies](#technologies)
+- [Architecture Decisions](#architecture-decisions)
+- [C4 Architecture Overview](#c4-architecture-overview)
+  - [System Context Diagram](#1-system-context-diagram)
+  - [Container Diagram](#2-container-diagram)
+  - [Component Diagram](#3-component-diagram)
+- [Requirement Gathering](#requirement-gathering)
+- [Feature Requirements](#feature-requirements)
+- [Quality Attributes](#quality-attributes)
+- [Actors / Users](#actors--users)
+- [System Constraints](#system-constraints)
+- [Saga Sequence Diagram](#saga-sequence-diagram)
+- [User Flow Diagram](#user-flow-diagram)
+- [Event Flow](#event-flow)
+- [Messaging Topology Diagram (RabbitMQ)](#messaging-topology-diagram-rabbitmq)
+- [Current Implementation Status](#current-implementation-status)
+- [Roadmap](#roadmap)
+- [Running the Project](#running-the-project)
+- [Learning Objectives](#learning-objectives)
+
+
 ⚠️ This repository is an architecture lab created to explore
 event-driven microservices patterns and saga orchestration.
 
