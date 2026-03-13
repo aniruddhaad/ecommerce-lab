@@ -261,6 +261,31 @@ Saga Compensation
 
 ---
 
+
+---
+
+# Messaging Topology Diagram (RabbitMQ)
+
+This diagram shows how **RabbitMQ exchanges, queues, and services interact** in the system.
+It highlights how events are routed between services in the event-driven architecture.
+
+```mermaid
+flowchart LR
+    OrderService -->|publish OrderCreated| OrdersExchange
+    OrdersExchange -->|route| SagaQueue
+    SagaQueue --> SagaService
+
+    SagaService -->|publish InventoryReserveRequested| InventoryExchange
+    InventoryExchange -->|route| InventoryQueue
+    InventoryQueue --> InventoryService
+
+    InventoryService -->|publish InventoryReserved| InventoryExchange
+    InventoryExchange -->|route| SagaQueue
+    SagaQueue --> SagaService
+
+    SagaService -->|confirm order| OrderService
+```
+
 # Current Implementation Status
 
 ✔ Docker environment  
