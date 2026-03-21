@@ -96,6 +96,33 @@ services:
     networks:
       - ecommerce-net
 
+  shipment-service:
+    build:
+      context: ./shipment-service
+    container_name: shipment-service
+    volumes:
+      - ./:/var/www
+    working_dir: /var/www/shipment-service
+    depends_on:
+      - rabbitmq
+      - shipment-db
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@shipment-db:5432/shipment_db?serverVersion=16"
+      MESSENGER_TRANSPORT_DSN: "amqp://admin:admin@rabbitmq:5672/%2f"
+    networks:
+      - ecommerce-net
+  shipment-db:
+    image: postgres:16
+    container_name: shipment-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: shipment_db
+    ports:
+      - "5436:5432"
+    networks:
+      - ecommerce-net
+
 networks:
   ecommerce-net:
     driver: bridge

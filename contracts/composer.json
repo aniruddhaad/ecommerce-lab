@@ -1,0 +1,9 @@
+{
+  "name": "app/contracts",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Contracts\\": ""
+    }
+  }
+}
